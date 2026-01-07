@@ -138,10 +138,41 @@ export async function registerRoutes(
     res.json(tickets);
   });
 
-  // === DASHBOARD ===
+  // === REPORTS ===
   app.get(api.reports.dashboard.path, async (req, res) => {
     const stats = await storage.getDashboardStats();
     res.json(stats);
+  });
+
+  app.get(api.reports.eligibility.path, async (req, res) => {
+    const dateStr = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const report = await getEligibilityReportData(dateStr);
+    res.json(report);
+  });
+
+  app.get(api.reports.export.path, async (req, res) => {
+    const dateStr = (req.query.date as string) || new Date().toISOString().split('T')[0];
+    const data = await getEligibilityReportData(dateStr);
+    
+    // Simple CSV conversion
+    const headers = ["Student ID", "Name", "Grade", "Class", "Plan", "Meals Remaining", "Status", "Used Today", "Used At"];
+    const rows = data.map(item => [
+      item.studentId,
+      item.name,
+      item.grade,
+      item.class,
+      item.planType,
+      item.mealsRemaining,
+      item.status,
+      item.usedToday ? "Yes" : "No",
+      item.usedAt || ""
+    ]);
+    
+    const csvContent = [headers, ...rows].map(row => row.join(',')).join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=eligibility_report_${dateStr}.csv`);
+    res.send(csvContent);
   });
 
   // === WEBHOOKS ===
@@ -182,6 +213,37 @@ export async function registerRoutes(
   await seedDatabase();
 
   return httpServer;
+}
+
+async function getEligibilityReportData(dateStr: string) {
+  const allStudents = await storage.getStudents();
+  const todayTickets = await storage.getTicketsByDate(dateStr);
+
+  const report = [];
+  for (const student of allStudents) {
+    const activeSub = await storage.getActiveSubscription(student.id);
+    const ticket = todayTickets.find(t => t.studentId === student.id);
+    
+    let status = 'expired';
+    if (student.isActive && student.mealsRemaining > 0) {
+      status = 'valid';
+    } else if (student.mealsRemaining <= 0) {
+      status = 'exhausted';
+    }
+
+    report.push({
+      studentId: student.studentId,
+      name: `${student.firstName} ${student.lastName}`,
+      grade: student.grade,
+      class: student.class,
+      planType: activeSub?.planType || 'None',
+      mealsRemaining: student.mealsRemaining,
+      status: status,
+      usedToday: ticket?.status === 'used',
+      usedAt: ticket?.usedAt?.toISOString()
+    });
+  }
+  return report;
 }
 
 async function seedDatabase() {

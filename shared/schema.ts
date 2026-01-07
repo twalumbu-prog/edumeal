@@ -130,3 +130,15 @@ export type WebhookQuickBooksRequest = {
   amount: number;
   transactionId: string;
 };
+
+export type EligibilityReportItem = {
+  studentId: string;
+  name: string;
+  grade: string;
+  class: string;
+  planType: string;
+  mealsRemaining: number;
+  status: 'valid' | 'expired' | 'exhausted';
+  usedToday: boolean;
+  usedAt?: string;
+};

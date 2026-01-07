@@ -100,6 +100,32 @@ export const api = {
         }),
       },
     },
+    eligibility: {
+      method: 'GET' as const,
+      path: '/api/reports/eligibility',
+      input: z.object({ date: z.string().optional() }).optional(),
+      responses: {
+        200: z.array(z.object({
+          studentId: z.string(),
+          name: z.string(),
+          grade: z.string(),
+          class: z.string(),
+          planType: z.string(),
+          mealsRemaining: z.number(),
+          status: z.string(),
+          usedToday: z.boolean(),
+          usedAt: z.string().optional(),
+        })),
+      },
+    },
+    export: {
+      method: 'GET' as const,
+      path: '/api/reports/export',
+      input: z.object({ date: z.string().optional() }).optional(),
+      responses: {
+        200: z.string(), // CSV Content
+      },
+    },
   },
   webhooks: {
     quickbooks: {
