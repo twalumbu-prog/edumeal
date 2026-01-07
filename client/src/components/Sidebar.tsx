@@ -4,6 +4,7 @@ import {
   LayoutDashboard, 
   Users, 
   QrCode, 
+  FileText,
   LogOut, 
   Menu,
   UtensilsCrossed
@@ -21,6 +22,7 @@ export function Sidebar() {
     { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
     { href: "/students", icon: Users, label: "Students" },
     { href: "/scanner", icon: QrCode, label: "Ticket Scanner" },
+    { href: "/reports", icon: FileText, label: "Reports" },
   ];
 
   const NavContent = () => (

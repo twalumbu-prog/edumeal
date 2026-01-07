@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Students from "@/pages/Students";
 import TicketScanner from "@/pages/TicketScanner";
+import Reports from "@/pages/Reports";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any> }) {
   const { user, isLoading } = useAuth();
@@ -45,6 +46,10 @@ function Router() {
       
       <Route path="/scanner">
         <ProtectedRoute component={TicketScanner} />
+      </Route>
+
+      <Route path="/reports">
+        <ProtectedRoute component={Reports} />
       </Route>
 
       <Route component={NotFound} />
