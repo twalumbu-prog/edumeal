@@ -138,6 +138,26 @@ export async function registerRoutes(
     res.json(tickets);
   });
 
+  // === ELIGIBILITY REPORTS ===
+  app.get("/api/eligibility-reports", async (req, res) => {
+    const reports = await storage.getEligibilityReports();
+    res.json(reports);
+  });
+
+  app.post("/api/eligibility-reports", async (req, res) => {
+    const { date } = req.body;
+    const existing = await storage.getEligibilityReportByDate(date);
+    if (existing) {
+      return res.status(400).json({ message: "Report already exists for this date" });
+    }
+    const report = await storage.createEligibilityReport({
+      date,
+      status: "published",
+      generatedBy: (req.user as any)?.username || "admin"
+    });
+    res.status(201).json(report);
+  });
+
   // === REPORTS ===
   app.get(api.reports.dashboard.path, async (req, res) => {
     const stats = await storage.getDashboardStats();

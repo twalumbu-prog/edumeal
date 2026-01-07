@@ -1,11 +1,12 @@
 import { db } from "./db";
 import {
-  students, subscriptions, tickets, logs,
+  students, subscriptions, tickets, logs, eligibilityReports,
   type Student, type InsertStudent, type UpdateStudentRequest,
   type Subscription, type InsertSubscription,
   type Ticket, type InsertTicket,
   type Log,
-  type DashboardStats
+  type DashboardStats,
+  type EligibilityReport, type InsertEligibilityReport
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
@@ -35,6 +36,12 @@ export interface IStorage extends IAuthStorage {
 
   // Stats
   getDashboardStats(): Promise<DashboardStats>;
+
+  // Eligibility Reports
+  getEligibilityReports(): Promise<EligibilityReport[]>;
+  getEligibilityReport(id: number): Promise<EligibilityReport | undefined>;
+  getEligibilityReportByDate(date: string): Promise<EligibilityReport | undefined>;
+  createEligibilityReport(report: InsertEligibilityReport): Promise<EligibilityReport>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -160,6 +167,26 @@ export class DatabaseStorage implements IStorage {
       activeSubscriptions: Number(activeSubs[0].count),
       recentLogs: recent,
     };
+  }
+
+  // Eligibility Reports
+  async getEligibilityReports(): Promise<EligibilityReport[]> {
+    return await db.select().from(eligibilityReports).orderBy(desc(eligibilityReports.date));
+  }
+
+  async getEligibilityReport(id: number): Promise<EligibilityReport | undefined> {
+    const [report] = await db.select().from(eligibilityReports).where(eq(eligibilityReports.id, id));
+    return report;
+  }
+
+  async getEligibilityReportByDate(date: string): Promise<EligibilityReport | undefined> {
+    const [report] = await db.select().from(eligibilityReports).where(eq(eligibilityReports.date, date));
+    return report;
+  }
+
+  async createEligibilityReport(report: InsertEligibilityReport): Promise<EligibilityReport> {
+    const [newReport] = await db.insert(eligibilityReports).values(report).returning();
+    return newReport;
   }
 }
 

@@ -55,23 +55,33 @@ export const logs = pgTable("logs", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const eligibilityReports = pgTable("eligibility_reports", {
+  id: serial("id").primaryKey(),
+  date: date("date").notNull().unique(),
+  status: text("status").default("draft").notNull(), // 'draft', 'published'
+  generatedBy: text("generated_by"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // === RELATIONS ===
 export const studentsRelations = relations(students, ({ many }) => ({
   subscriptions: many(subscriptions),
   tickets: many(tickets),
 }));
 
-export const subscriptionsRelations = relations(subscriptions, ({ one }) => ({
-  student: one(students, {
-    fields: [subscriptions.studentId],
-    references: [students.id],
-  }),
+export const eligibilityReportsRelations = relations(eligibilityReports, ({ many }) => ({
+  tickets: many(tickets),
 }));
 
 export const ticketsRelations = relations(tickets, ({ one }) => ({
   student: one(students, {
     fields: [tickets.studentId],
     references: [students.id],
+  }),
+  report: one(eligibilityReports, {
+    fields: [tickets.date],
+    references: [eligibilityReports.date],
   }),
 }));
 
@@ -80,6 +90,7 @@ export const insertStudentSchema = createInsertSchema(students).omit({ id: true,
 export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({ id: true, createdAt: true });
 export const insertTicketSchema = createInsertSchema(tickets).omit({ id: true, generatedAt: true, usedAt: true });
 export const insertLogSchema = createInsertSchema(logs).omit({ id: true, createdAt: true });
+export const insertEligibilityReportSchema = createInsertSchema(eligibilityReports).omit({ id: true, createdAt: true, updatedAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -89,6 +100,8 @@ export type Subscription = typeof subscriptions.$inferSelect;
 export type InsertSubscription = z.infer<typeof insertSubscriptionSchema>;
 export type Ticket = typeof tickets.$inferSelect;
 export type Log = typeof logs.$inferSelect;
+export type EligibilityReport = typeof eligibilityReports.$inferSelect;
+export type InsertEligibilityReport = z.infer<typeof insertEligibilityReportSchema>;
 
 // Request/Response Types
 export type CreateStudentRequest = InsertStudent;
