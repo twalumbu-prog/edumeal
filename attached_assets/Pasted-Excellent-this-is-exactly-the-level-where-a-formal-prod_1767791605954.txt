@@ -1,0 +1,308 @@
+Excellent — this is exactly the level where a **formal product document + acceptance criteria** becomes powerful. You now have something that can be handed to:
+
+* Replit AI
+* Cursor
+* A human developer
+* Or used as a QA checklist
+
+Below is **Part 2**, which complements the Product Design Document already placed in canvas.
+
+---
+
+# FEATURE LIST & ACCEPTANCE CRITERIA
+
+**School Canteen Individual Meal Verification System**
+
+This section is written so you can:
+
+* Paste it directly into Replit / Cursor
+* Use it as a build checklist
+* Use it for testing & sign-off
+
+---
+
+## 1. STUDENT MANAGEMENT
+
+### Feature 1.1: Student Master Registry
+
+**Description:**
+System stores a master list of all pupils eligible for canteen services.
+
+**Acceptance Criteria:**
+
+* [ ] Admin can create, edit, and deactivate students
+* [ ] Each student has a unique StudentID
+* [ ] Students are grouped by Grade and Class
+* [ ] Inactive students cannot receive tickets
+* [ ] Student data can be imported via CSV
+
+---
+
+## 2. QUICKBOOKS PAYMENT INTEGRATION
+
+### Feature 2.1: Automated Subscription Creation
+
+**Description:**
+New canteen payments in QuickBooks automatically create or update subscriptions.
+
+**Acceptance Criteria:**
+
+* [ ] System receives transactions via Zapier/Make webhook
+* [ ] Transaction includes:
+
+  * StudentID
+  * Product type
+  * Service start date
+  * Amount paid
+* [ ] Correct plan (Daily/Weekly/Monthly/Termly) is assigned
+* [ ] TotalMeals is calculated correctly per plan
+* [ ] MealsRemaining updates immediately
+* [ ] Failed syncs are logged and visible
+
+---
+
+## 3. SUBSCRIPTION ENGINE
+
+### Feature 3.1: Usage-Based Subscription Logic
+
+**Description:**
+Subscriptions are reduced only when meals are consumed.
+
+**Acceptance Criteria:**
+
+* [ ] MealsRemaining is NOT reduced by date alone
+* [ ] MealsRemaining reduces only on successful scan
+* [ ] Subscription status updates automatically:
+
+  * Active → Exhausted
+* [ ] Multiple purchases accumulate meals correctly
+* [ ] Future-dated subscriptions are supported
+
+---
+
+## 4. DAILY ELIGIBILITY ENGINE
+
+### Feature 4.1: Daily Validity Calculation
+
+**Description:**
+System determines who is eligible to eat on any given day.
+
+**Acceptance Criteria:**
+
+* [ ] Only students with MealsRemaining > 0 are eligible
+* [ ] StartDate ≤ Today is enforced
+* [ ] Eligibility is recalculated dynamically
+* [ ] No manual marking is required
+
+---
+
+## 5. TICKET GENERATION
+
+### Feature 5.1: Secure One-Time Tickets
+
+**Description:**
+System generates one unique ticket per eligible student per day.
+
+**Acceptance Criteria:**
+
+* [ ] Ticket is generated only once per student per day
+* [ ] Each ticket contains:
+
+  * Unique TicketID
+  * StudentID
+  * Date
+  * Session
+  * Security hash
+* [ ] Ticket is valid only for that specific date
+* [ ] Tickets are grouped by class for printing
+* [ ] Re-generating tickets does NOT duplicate them
+
+---
+
+## 6. TICKET PRINTING
+
+### Feature 6.1: Print-Ready Output
+
+**Description:**
+Tickets are formatted for efficient A4 printing and cutting.
+
+**Acceptance Criteria:**
+
+* [ ] A4 layout supported
+* [ ] Clear student name and class visible
+* [ ] QR code readable from printed paper
+* [ ] Class headers included
+* [ ] Print preview available
+
+---
+
+## 7. SCANNING & CONSUMPTION TRACKING
+
+### Feature 7.1: Ticket Scanning
+
+**Description:**
+Canteen assistant scans ticket to verify entitlement.
+
+**Acceptance Criteria:**
+
+* [ ] Camera-based QR scanning works on mobile
+* [ ] Scan response time < 2 seconds
+* [ ] System validates:
+
+  * Ticket existence
+  * Date match
+  * Unused status
+  * MealsRemaining > 0
+* [ ] Success scan:
+
+  * Marks ticket as Used
+  * Creates consumption log
+  * Deducts meal
+* [ ] Duplicate scans are rejected
+* [ ] Clear success/failure feedback displayed
+
+---
+
+## 8. FRAUD & ERROR PREVENTION
+
+### Feature 8.1: Duplicate & Forgery Protection
+
+**Description:**
+System prevents reuse or duplication of tickets.
+
+**Acceptance Criteria:**
+
+* [ ] Same TicketID cannot be used twice
+* [ ] Altered QR payload is rejected
+* [ ] Tickets from previous days are rejected
+* [ ] Attempted misuse is logged
+
+---
+
+## 9. OFFLINE MODE
+
+### Feature 9.1: Offline Scanning Support
+
+**Description:**
+System continues operating during internet outages.
+
+**Acceptance Criteria:**
+
+* [ ] Scanner can validate tickets offline
+* [ ] Scans are cached locally
+* [ ] Data syncs automatically when online
+* [ ] Duplicate scans during offline mode are prevented
+
+---
+
+## 10. OVERRIDES & EXCEPTIONS
+
+### Feature 10.1: Controlled Manual Overrides
+
+**Description:**
+Authorized staff can serve a child without a ticket.
+
+**Acceptance Criteria:**
+
+* [ ] Override requires supervisor login
+* [ ] Student must exist in system
+* [ ] Override deducts meal correctly
+* [ ] Override reason is mandatory
+* [ ] Override logged in audit trail
+
+---
+
+## 11. REPORTING & DASHBOARDS
+
+### Feature 11.1: Operational Dashboard
+
+**Acceptance Criteria:**
+
+* [ ] Meals served today
+* [ ] Eligible vs consumed
+* [ ] No-shows
+* [ ] Active vs exhausted subscriptions
+
+### Feature 11.2: Financial Reports
+
+**Acceptance Criteria:**
+
+* [ ] Meals sold vs meals consumed
+* [ ] Revenue per plan type
+* [ ] Variance reports
+
+---
+
+## 12. AUDIT & LOGGING
+
+### Feature 12.1: Full Audit Trail
+
+**Acceptance Criteria:**
+
+* [ ] All scans logged
+* [ ] All overrides logged
+* [ ] All sync failures logged
+* [ ] Logs exportable
+
+---
+
+## 13. SECURITY & ACCESS CONTROL
+
+### Feature 13.1: Role-Based Access
+
+**Acceptance Criteria:**
+
+* [ ] Admin-only configuration
+* [ ] Scan-only access for assistants
+* [ ] Sensitive actions restricted
+* [ ] Secure authentication enforced
+
+---
+
+## 14. PERFORMANCE & USABILITY
+
+### Feature 14.1: Operational Performance
+
+**Acceptance Criteria:**
+
+* [ ] Serving time ≤ 3 seconds per child
+* [ ] App usable on low-end Android devices
+* [ ] Interface readable in bright light
+* [ ] Minimal taps required for scanning
+
+---
+
+## 15. DEPLOYMENT & MAINTENANCE
+
+### Feature 15.1: System Reliability
+
+**Acceptance Criteria:**
+
+* [ ] Daily backups
+* [ ] Error alerts visible to admin
+* [ ] Easy environment configuration
+* [ ] Clear system health indicators
+
+---
+
+## FINAL NOTE (Important)
+
+You now have:
+
+* A **formal Product Design Document**
+* A **feature-by-feature acceptance checklist**
+* A system that is:
+
+  * Individually verifiable
+  * Usage-based
+  * Low teacher workload
+  * Operationally realistic
+
+If you want next, I can:
+
+* Convert this into **technical API specs**
+* Design the **database schema (SQL/Prisma)**
+* Write **pseudo-code or starter Replit prompts**
+* Or help you **break this into development sprints**
+
+Just tell me what the next step is.
