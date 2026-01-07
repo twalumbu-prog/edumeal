@@ -4,14 +4,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, Calendar as CalendarIcon } from "lucide-react";
+import { Download, FileText, Calendar as CalendarIcon, Printer, Play } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useLocation } from "wouter";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Reports() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [date, setDate] = useState<Date>(new Date());
   const dateStr = format(date, "yyyy-MM-dd");
 
@@ -19,17 +26,36 @@ export default function Reports() {
     queryKey: [api.reports.eligibility.path, { date: dateStr }],
   });
 
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", api.tickets.generate.path, { date: dateStr });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: [api.tickets.list.path] });
+      queryClient.invalidateQueries({ queryKey: [api.reports.eligibility.path] });
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+    },
+  });
+
   const handleExport = () => {
     window.open(`${api.reports.export.path}?date=${dateStr}`, '_blank');
+  };
+
+  const handlePrint = () => {
+    setLocation(`/tickets/print?date=${dateStr}`);
   };
 
   return (
     <div className="p-8 space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Eligibility Report</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Eligibility & Tickets</h1>
           <p className="text-muted-foreground">
-            View and export student eligibility and ticket usage.
+            Generate and manage daily meal verification.
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -55,6 +81,22 @@ export default function Reports() {
               />
             </PopoverContent>
           </Popover>
+          
+          <Button 
+            variant="outline" 
+            onClick={() => generateMutation.mutate()}
+            disabled={generateMutation.isPending}
+            className="gap-2"
+          >
+            <Play className="h-4 w-4" />
+            Generate Tickets
+          </Button>
+
+          <Button variant="outline" onClick={handlePrint} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Print Tickets
+          </Button>
+
           <Button onClick={handleExport} className="gap-2">
             <Download className="h-4 w-4" />
             Export CSV

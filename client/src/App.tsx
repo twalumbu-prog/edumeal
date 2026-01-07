@@ -10,6 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Students from "@/pages/Students";
 import TicketScanner from "@/pages/TicketScanner";
 import Reports from "@/pages/Reports";
+import PrintTickets from "@/pages/PrintTickets";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any> }) {
   const { user, isLoading } = useAuth();
@@ -50,6 +51,10 @@ function Router() {
 
       <Route path="/reports">
         <ProtectedRoute component={Reports} />
+      </Route>
+
+      <Route path="/tickets/print">
+        <ProtectedRoute component={PrintTickets} />
       </Route>
 
       <Route component={NotFound} />
