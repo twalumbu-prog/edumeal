@@ -1,7 +1,4 @@
-
-import fetch from 'node-fetch';
-
-const WEBHOOK_URL = 'http://localhost:5000/api/webhooks/quickbooks';
+import http from 'http';
 
 const testTransaction = {
   studentId: "STU001", // Match the seeded student ID
@@ -10,26 +7,38 @@ const testTransaction = {
   transactionId: "QB-TEST-" + Date.now()
 };
 
-async function triggerWebhook() {
-  console.log(`🚀 Sending test transaction to ${WEBHOOK_URL}...`);
-  try {
-    const response = await fetch(WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(testTransaction)
-    });
+const data = JSON.stringify(testTransaction);
 
-    const data = await response.json();
-    if (response.ok) {
+const options = {
+  hostname: 'localhost',
+  port: 5000,
+  path: '/api/webhooks/quickbooks',
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Content-Length': data.length
+  }
+};
+
+console.log(`🚀 Sending test transaction to http://localhost:5000/api/webhooks/quickbooks...`);
+
+const req = http.request(options, (res) => {
+  let body = '';
+  res.on('data', (chunk) => body += chunk);
+  res.on('end', () => {
+    if (res.statusCode >= 200 && res.statusCode < 300) {
       console.log('✅ Success! Transaction processed.');
-      console.log('Details:', data);
+      console.log('Response:', body);
       console.log('\nNow check the "Students" page or "Dashboard" to see the updated balance.');
     } else {
-      console.error('❌ Failed to process transaction:', data);
+      console.error(`❌ Failed with status ${res.statusCode}:`, body);
     }
-  } catch (error) {
-    console.error('❌ Error sending webhook:', error.message);
-  }
-}
+  });
+});
 
-triggerWebhook();
+req.on('error', (error) => {
+  console.error('❌ Error sending webhook:', error.message);
+});
+
+req.write(data);
+req.end();
