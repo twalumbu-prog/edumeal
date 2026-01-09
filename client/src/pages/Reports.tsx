@@ -14,6 +14,7 @@ import { api } from "@shared/routes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/ui/loader";
 
 export default function Reports() {
   const [, setLocation] = useLocation();
@@ -100,7 +101,9 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reportsLoading ? (
-          <div className="col-span-full py-12 text-center">Loading reports...</div>
+          <div className="col-span-full py-12">
+            <Loader size="lg" text="Fetching latest reports..." />
+          </div>
         ) : reports?.map((report: any) => (
           <Card key={report.id} className="hover-elevate cursor-pointer" onClick={() => setSelectedReportDate(report.date)}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
