@@ -2,22 +2,48 @@ import { Sidebar } from "@/components/Sidebar";
 import { StatsCards } from "@/components/StatsCards";
 import { useStats } from "@/hooks/use-stats";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format } from "date-fns";
-import { Activity, AlertCircle } from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+import { Activity, AlertCircle, RefreshCw } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 
 export default function Dashboard() {
-  const { data: stats, isLoading } = useStats();
+  const { data: stats, isLoading, isFetching, refetch, dataUpdatedAt } = useStats();
+  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+
+  useEffect(() => {
+    if (dataUpdatedAt) {
+      setLastUpdate(new Date(dataUpdatedAt));
+    }
+  }, [dataUpdatedAt]);
 
   return (
     <div className="flex min-h-screen bg-muted/20">
       <Sidebar />
       <main className="flex-1 md:ml-64 p-4 md:p-8">
-        <header className="mb-8">
-          <h1 className="font-display text-3xl font-bold text-foreground">Overview</h1>
-          <p className="text-muted-foreground mt-1">
-            Welcome back! Here's what's happening today, {format(new Date(), "MMMM do")}.
-          </p>
+        <header className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold text-foreground">Overview</h1>
+            <p className="text-muted-foreground mt-1">
+              Welcome back! Here's what's happening today, {format(new Date(), "MMMM do")}.
+              {lastUpdate && !isFetching && (
+                <span className="ml-2 text-xs">
+                  • Updated {formatDistanceToNow(lastUpdate, { addSuffix: true })}
+                </span>
+              )}
+            </p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => refetch()}
+            disabled={isFetching}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isFetching ? 'animate-spin' : ''}`} />
+            {isFetching ? 'Refreshing...' : 'Refresh'}
+          </Button>
         </header>
 
         <StatsCards stats={stats} loading={isLoading} />
@@ -27,9 +53,17 @@ export default function Dashboard() {
           <div className="lg:col-span-2">
             <Card className="h-full border-none shadow-md">
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  Recent Activity
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Activity className="w-5 h-5 text-primary" />
+                    Recent Activity
+                  </div>
+                  {isFetching && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                      <span>Updating...</span>
+                    </div>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -52,9 +86,9 @@ export default function Dashboard() {
                         <div key={log.id} className="flex gap-4 items-start group">
                           <div className={`
                             w-10 h-10 rounded-full flex items-center justify-center shrink-0 border
-                            ${log.type === 'scan' ? 'bg-green-50 border-green-100 text-green-600' : 
-                              log.type === 'error' ? 'bg-red-50 border-red-100 text-red-600' : 
-                              'bg-blue-50 border-blue-100 text-blue-600'}
+                            ${log.type === 'scan' ? 'bg-green-50 border-green-100 text-green-600' :
+                              log.type === 'error' ? 'bg-red-50 border-red-100 text-red-600' :
+                                'bg-blue-50 border-blue-100 text-blue-600'}
                           `}>
                             {log.type === 'scan' ? <Activity className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                           </div>
@@ -93,7 +127,9 @@ export default function Dashboard() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium opacity-90">QuickBooks Sync</span>
-                    <span className="px-2 py-1 rounded bg-white/20 text-xs font-semibold">Active</span>
+                    <span className={`px-2 py-1 rounded bg-white/20 text-xs font-semibold ${!isLoading && stats?.recentLogs?.some(l => l.type === 'webhook') ? 'text-white' : 'text-white/60'}`}>
+                      {isLoading ? 'Checking...' : stats?.recentLogs?.some(l => l.type === 'webhook') ? 'Active' : 'Standby'}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium opacity-90">Scanner API</span>
@@ -101,7 +137,9 @@ export default function Dashboard() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium opacity-90">Database</span>
-                    <span className="px-2 py-1 rounded bg-white/20 text-xs font-semibold">Connected</span>
+                    <span className={`px-2 py-1 rounded bg-white/20 text-xs font-semibold ${!isLoading ? 'text-white' : 'text-white/60'}`}>
+                      {isLoading ? 'Connecting...' : 'Connected'}
+                    </span>
                   </div>
                 </div>
               </CardContent>
