@@ -84,34 +84,66 @@ export default function Dashboard() {
                     <div className="space-y-6">
                       {stats?.recentLogs?.map((log) => {
                         let title = "System Event";
-                        let description = JSON.stringify(log.details);
+                        let description = "";
                         let icon = <AlertCircle className="w-5 h-5" />;
                         let colorClass = "bg-blue-50 border-blue-100 text-blue-600";
 
+                        // Helper to safely get details
+                        const getDetails = () => {
+                          if (typeof log.details === 'string') {
+                            try {
+                              return JSON.parse(log.details);
+                            } catch (e) {
+                              return { message: log.details };
+                            }
+                          }
+                          return log.details || {};
+                        };
+                        const details = getDetails();
+
                         if (log.type === 'scan') {
                           title = "Meal Ticket Scanned";
-                          // @ts-ignore
-                          const studentName = log.details?.studentName || "Unknown Student";
-                          // @ts-ignore
-                          const result = log.details?.status === 'allowed' ? 'Authorized' : 'Denied';
+                          const studentName = details.studentName || "Unknown Student";
+                          const result = details.status === 'allowed' ? 'Authorized' : 'Denied';
                           description = `${result} scan for ${studentName}`;
                           icon = <Activity className="w-5 h-5" />;
                           colorClass = "bg-green-50 border-green-100 text-green-600";
-                        } else if (log.type === 'webhook' || log.type === 'sync') {
-                          title = "QuickBooks Notification";
-                          // @ts-ignore
-                          const body = log.details?.body || log.details;
-                          // @ts-ignore
-                          const student = body?.studentId || log.details?.studentId || "Unknown Student";
-                          // @ts-ignore
-                          const product = body?.productType || log.details?.productType || "Subscription Update";
-
-                          description = `Received ${product} for ${student}`;
+                        } else if (log.type === 'webhook_attempt') {
+                          title = "Incoming Webhook";
+                          description = "Received raw payload from QuickBooks/Zapier";
                           icon = <RefreshCw className="w-5 h-5" />;
-                          colorClass = "bg-purple-50 border-purple-100 text-purple-600";
+                          colorClass = "bg-gray-50 border-gray-100 text-gray-500";
+                        } else if (log.type === 'webhook' || log.type === 'sync') {
+                          if (details.action === 'auto_create_student') {
+                            title = "New Student Created";
+                            description = `Auto-enrolled student ${details.studentId}`;
+                            icon = <Activity className="w-5 h-5" />;
+                            colorClass = "bg-blue-50 border-blue-100 text-blue-600";
+                          } else if (details.error) {
+                            title = "Sync Error";
+                            description = `Failed to process: ${details.error}`;
+                            icon = <AlertCircle className="w-5 h-5" />;
+                            colorClass = "bg-red-50 border-red-100 text-red-600";
+                          } else if (details.mealsAdded) {
+                            title = "Subscription Updated";
+                            description = `Added ${details.mealsAdded} meals to ${details.studentId}`;
+                            icon = <RefreshCw className="w-5 h-5" />;
+                            colorClass = "bg-purple-50 border-purple-100 text-purple-600";
+                          } else {
+                            title = "QuickBooks Notification";
+                            const body = details.body || details;
+                            const student = body?.studentId || details.studentId || "Unknown Student";
+                            const product = body?.productType || details.productType || "Subscription Update";
+                            description = `Received ${product} for ${student}`;
+                            icon = <RefreshCw className="w-5 h-5" />;
+                            colorClass = "bg-purple-50 border-purple-100 text-purple-600";
+                          }
                         } else if (log.type === 'error') {
                           title = "System Warning";
                           colorClass = "bg-red-50 border-red-100 text-red-600";
+                          description = details.message || JSON.stringify(details);
+                        } else {
+                          description = JSON.stringify(details);
                         }
 
                         return (
