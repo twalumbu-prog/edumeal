@@ -102,7 +102,7 @@ export function Sidebar() {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r bg-background/50 backdrop-blur-xl p-6">
+      <div className="hidden md:flex flex-col w-64 h-screen fixed left-0 top-0 border-r bg-background z-50 p-6">
         <NavContent />
       </div>
     </>

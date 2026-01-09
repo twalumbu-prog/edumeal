@@ -93,7 +93,38 @@
   height: 2px;
   background: hsl(var(--success));
   box-shadow: 0 0 4px hsl(var(--success));
-  animation: scan-line 2s linear infinite;
+  animation: scan-line 2.5s linear infinite;
+}
+
+/* Hide Html5QrcodeScanner default UI elements */
+#reader button,
+#reader select,
+#reader label,
+#reader span:not([class]),
+#reader div[id*="qr-shaded-region"],
+#reader div[style*="text-align"] {
+  display: none !important;
+}
+
+/* Hide scanner control buttons and text */
+#reader button[onclick] {
+  display: none !important;
+}
+
+/* Ensure camera view is clean and fills container */
+#reader > div {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+#reader video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
 }
 
 /* Glassmorphism */

@@ -36,7 +36,7 @@ export function StatsCards({ stats, loading }: StatsCardsProps) {
     },
     {
       title: "Verification Rate",
-      value: "98%",
+      value: stats?.mealsServedToday && stats.mealsServedToday > 0 ? "100%" : "---",
       icon: CheckCircle2,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
