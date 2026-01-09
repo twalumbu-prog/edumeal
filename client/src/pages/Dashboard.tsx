@@ -82,29 +82,60 @@ export default function Dashboard() {
                     </div>
                   ) : (
                     <div className="space-y-6">
-                      {stats?.recentLogs?.map((log) => (
-                        <div key={log.id} className="flex gap-4 items-start group">
-                          <div className={`
-                            w-10 h-10 rounded-full flex items-center justify-center shrink-0 border
-                            ${log.type === 'scan' ? 'bg-green-50 border-green-100 text-green-600' :
-                              log.type === 'error' ? 'bg-red-50 border-red-100 text-red-600' :
-                                'bg-blue-50 border-blue-100 text-blue-600'}
-                          `}>
-                            {log.type === 'scan' ? <Activity className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                      {stats?.recentLogs?.map((log) => {
+                        let title = "System Event";
+                        let description = JSON.stringify(log.details);
+                        let icon = <AlertCircle className="w-5 h-5" />;
+                        let colorClass = "bg-blue-50 border-blue-100 text-blue-600";
+
+                        if (log.type === 'scan') {
+                          title = "Meal Ticket Scanned";
+                          // @ts-ignore
+                          const studentName = log.details?.studentName || "Unknown Student";
+                          // @ts-ignore
+                          const result = log.details?.status === 'allowed' ? 'Authorized' : 'Denied';
+                          description = `${result} scan for ${studentName}`;
+                          icon = <Activity className="w-5 h-5" />;
+                          colorClass = "bg-green-50 border-green-100 text-green-600";
+                        } else if (log.type === 'webhook' || log.type === 'sync') {
+                          title = "QuickBooks Notification";
+                          // @ts-ignore
+                          const body = log.details?.body || log.details;
+                          // @ts-ignore
+                          const student = body?.studentId || log.details?.studentId || "Unknown Student";
+                          // @ts-ignore
+                          const product = body?.productType || log.details?.productType || "Subscription Update";
+
+                          description = `Received ${product} for ${student}`;
+                          icon = <RefreshCw className="w-5 h-5" />;
+                          colorClass = "bg-purple-50 border-purple-100 text-purple-600";
+                        } else if (log.type === 'error') {
+                          title = "System Warning";
+                          colorClass = "bg-red-50 border-red-100 text-red-600";
+                        }
+
+                        return (
+                          <div key={log.id} className="flex gap-4 items-start group">
+                            <div className={`
+                              w-10 h-10 rounded-full flex items-center justify-center shrink-0 border
+                              ${colorClass}
+                            `}>
+                              {icon}
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium text-foreground">
+                                {title}
+                              </p>
+                              <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                                {description}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-wider font-semibold">
+                                {log.createdAt ? format(new Date(log.createdAt), "h:mm a") : ""}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium text-foreground">
-                              {log.type === 'scan' ? 'Meal Ticket Scanned' : 'System Event'}
-                            </p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {JSON.stringify(log.details)}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground/60 mt-1 uppercase tracking-wider font-semibold">
-                              {log.createdAt ? format(new Date(log.createdAt), "h:mm a") : ""}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                       {!stats?.recentLogs?.length && (
                         <div className="text-center py-10 text-muted-foreground">
                           No recent activity recorded today.
