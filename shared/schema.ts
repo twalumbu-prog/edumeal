@@ -64,6 +64,15 @@ export const eligibilityReports = pgTable("eligibility_reports", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const integrations = pgTable("integrations", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(), // 'zapier', 'quickbooks'
+  status: text("status").notNull().default("inactive"), // 'active', 'inactive', 'error'
+  settings: jsonb("settings").notNull().default({}),
+  lastSync: timestamp("last_sync"),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // === RELATIONS ===
 export const studentsRelations = relations(students, ({ many }) => ({
   subscriptions: many(subscriptions),
@@ -91,6 +100,7 @@ export const insertSubscriptionSchema = createInsertSchema(subscriptions).omit({
 export const insertTicketSchema = createInsertSchema(tickets).omit({ id: true, generatedAt: true, usedAt: true });
 export const insertLogSchema = createInsertSchema(logs).omit({ id: true, createdAt: true });
 export const insertEligibilityReportSchema = createInsertSchema(eligibilityReports).omit({ id: true, createdAt: true, updatedAt: true });
+export const insertIntegrationSchema = createInsertSchema(integrations).omit({ id: true, updatedAt: true });
 
 // === EXPLICIT API CONTRACT TYPES ===
 
@@ -102,6 +112,8 @@ export type Ticket = typeof tickets.$inferSelect;
 export type Log = typeof logs.$inferSelect;
 export type EligibilityReport = typeof eligibilityReports.$inferSelect;
 export type InsertEligibilityReport = z.infer<typeof insertEligibilityReportSchema>;
+export type Integration = typeof integrations.$inferSelect;
+export type InsertIntegration = z.infer<typeof insertIntegrationSchema>;
 
 // Request/Response Types
 export type CreateStudentRequest = InsertStudent;

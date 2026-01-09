@@ -1,11 +1,12 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { 
-  LayoutDashboard, 
-  Users, 
-  QrCode, 
+import {
+  LayoutDashboard,
+  Users,
+  QrCode,
   FileText,
-  LogOut, 
+  Link2,
+  LogOut,
   Menu,
   UtensilsCrossed
 } from "lucide-react";
@@ -23,6 +24,7 @@ export function Sidebar() {
     { href: "/students", icon: Users, label: "Students" },
     { href: "/scanner", icon: QrCode, label: "Ticket Scanner" },
     { href: "/reports", icon: FileText, label: "Reports" },
+    { href: "/integrations", icon: Link2, label: "Integrations" },
   ];
 
   const NavContent = () => (
@@ -43,11 +45,10 @@ export function Sidebar() {
           return (
             <Link key={link.href} href={link.href}>
               <div
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group ${
-                  isActive
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg cursor-pointer transition-all duration-200 group ${isActive
                     ? "bg-primary text-primary-foreground shadow-md shadow-primary/20"
                     : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
+                  }`}
                 onClick={() => setOpen(false)}
               >
                 <link.icon className={`w-5 h-5 ${isActive ? "" : "group-hover:scale-110 transition-transform"}`} />
@@ -60,20 +61,20 @@ export function Sidebar() {
 
       <div className="mt-auto border-t pt-4">
         <div className="flex items-center gap-3 px-4 py-3 mb-2">
-           {user?.profileImageUrl ? (
-             <img src={user.profileImageUrl} alt={user.firstName || 'User'} className="w-8 h-8 rounded-full border border-border" />
-           ) : (
-             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-               {user?.firstName?.[0] || "A"}
-             </div>
-           )}
-           <div className="flex-1 min-w-0">
-             <p className="text-sm font-medium truncate">{user?.firstName} {user?.lastName}</p>
-             <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
-           </div>
+          {user?.profileImageUrl ? (
+            <img src={user.profileImageUrl} alt={user.firstName || 'User'} className="w-8 h-8 rounded-full border border-border" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
+              {user?.firstName?.[0] || "A"}
+            </div>
+          )}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium truncate">{user?.firstName} {user?.lastName}</p>
+            <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+          </div>
         </div>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
           onClick={() => logout()}
         >

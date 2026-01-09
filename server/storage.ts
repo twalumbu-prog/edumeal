@@ -1,12 +1,13 @@
 import { db } from "./db";
 import {
-  students, subscriptions, tickets, logs, eligibilityReports,
+  students, subscriptions, tickets, logs, eligibilityReports, integrations,
   type Student, type InsertStudent, type UpdateStudentRequest,
   type Subscription, type InsertSubscription,
   type Ticket, type InsertTicket,
   type Log,
   type DashboardStats,
-  type EligibilityReport, type InsertEligibilityReport
+  type EligibilityReport, type InsertEligibilityReport,
+  type Integration, type InsertIntegration
 } from "@shared/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
 import { authStorage, type IAuthStorage } from "./replit_integrations/auth/storage";
@@ -42,6 +43,11 @@ export interface IStorage extends IAuthStorage {
   getEligibilityReport(id: number): Promise<EligibilityReport | undefined>;
   getEligibilityReportByDate(date: string): Promise<EligibilityReport | undefined>;
   createEligibilityReport(report: InsertEligibilityReport): Promise<EligibilityReport>;
+
+  // Integrations
+  getIntegrations(): Promise<Integration[]>;
+  getIntegrationByName(name: string): Promise<Integration | undefined>;
+  updateIntegration(name: string, updates: Partial<Integration>): Promise<Integration>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -187,6 +193,34 @@ export class DatabaseStorage implements IStorage {
   async createEligibilityReport(report: InsertEligibilityReport): Promise<EligibilityReport> {
     const [newReport] = await db.insert(eligibilityReports).values(report).returning();
     return newReport;
+  }
+
+  // Integrations
+  async getIntegrations(): Promise<Integration[]> {
+    return await db.select().from(integrations);
+  }
+
+  async getIntegrationByName(name: string): Promise<Integration | undefined> {
+    const [integration] = await db.select().from(integrations).where(eq(integrations.name, name));
+    return integration;
+  }
+
+  async updateIntegration(name: string, updates: Partial<Integration>): Promise<Integration> {
+    const [updated] = await db.update(integrations)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(integrations.name, name))
+      .returning();
+
+    if (!updated) {
+      // Create if doesn't exist (upsert pattern for integrations)
+      const [newIntegration] = await db.insert(integrations).values({
+        name,
+        status: updates.status || 'inactive',
+        settings: updates.settings || {},
+      }).returning();
+      return newIntegration;
+    }
+    return updated;
   }
 }
 

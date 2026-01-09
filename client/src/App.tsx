@@ -11,6 +11,7 @@ import Students from "@/pages/Students";
 import TicketScanner from "@/pages/TicketScanner";
 import Reports from "@/pages/Reports";
 import PrintTickets from "@/pages/PrintTickets";
+import Integrations from "@/pages/Integrations";
 
 function ProtectedRoute({ component: Component, ...rest }: { component: React.ComponentType<any> }) {
   const { user, isLoading } = useAuth();
@@ -36,21 +37,25 @@ function Router() {
       <Route path="/">
         {user ? <Redirect to="/dashboard" /> : <Login />}
       </Route>
-      
+
       <Route path="/dashboard">
         <ProtectedRoute component={Dashboard} />
       </Route>
-      
+
       <Route path="/students">
         <ProtectedRoute component={Students} />
       </Route>
-      
+
       <Route path="/scanner">
         <ProtectedRoute component={TicketScanner} />
       </Route>
 
       <Route path="/reports">
         <ProtectedRoute component={Reports} />
+      </Route>
+
+      <Route path="/integrations">
+        <ProtectedRoute component={Integrations} />
       </Route>
 
       <Route path="/tickets/print">

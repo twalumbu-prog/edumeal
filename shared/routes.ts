@@ -136,9 +136,40 @@ export const api = {
         productType: z.string(),
         amount: z.number(),
         transactionId: z.string(),
+        grade: z.string().optional(),
+        class: z.string().optional(),
+        description: z.string().optional(),
+        serviceDate: z.string().optional(),
       }),
       responses: {
         200: z.object({ success: z.boolean() }),
+      },
+    },
+  },
+  integrations: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/integrations',
+      responses: {
+        200: z.array(z.custom<any>()), // Integration type
+      },
+    },
+    update: {
+      method: 'POST' as const,
+      path: '/api/integrations/:name',
+      input: z.object({
+        status: z.string().optional(),
+        settings: z.any().optional(),
+      }),
+      responses: {
+        200: z.custom<any>(),
+      },
+    },
+    logs: {
+      method: 'GET' as const,
+      path: '/api/integrations/logs',
+      responses: {
+        200: z.array(z.custom<any>()),
       },
     },
   },
